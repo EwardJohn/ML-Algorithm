@@ -31,7 +31,7 @@ def compute_cost(X, y, theta):
 
 # ===================== Part 1: Plotting =====================
 print('Plotting Data...')
-data = np.loadtxt('./coursera-ml-py/machine-learning-ex1/ex1/ex1data1.txt', delimiter=',', usecols=(0, 1))
+data = np.loadtxt('./ex1data1.txt', delimiter=',', usecols=(0, 1))
 X = data[:, 0]
 y = data[:, 1]
 m = y.size
