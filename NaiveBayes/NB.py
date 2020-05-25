@@ -10,10 +10,9 @@ class MultinomialNB(object):
         self.classes = None
         self.conditional_prob = None 
 
-    def cal_feature_prob(self,feature):   # calculate the prob of the classes P(yk) = (Nyk + α) / (N + k* α)
-        # print("feature =",feature)
+    def cal_feature_prob(self,feature):   # calculate the prob of the classes P(x|yk) = (Nyk,x + α) / (Nyk + n* α)
+        print("feature =",feature)
         values = np.unique(feature)
-        # print("values = ",values)
         total_num = float(len(feature))
         prob_dict = {}
         for v in values:
@@ -23,30 +22,24 @@ class MultinomialNB(object):
     def fit(self,X,y):                    #This is the model function to train the data
 
         self.classes = np.unique(y)         #self.classes = [-1,1]
-        # print("self.classes =",self.classes)
         if self.class_prior == None:
             class_num = len(self.classes)     #y's classes here is 2 : -1 , 1
             if not self.fit_prior :
                 self.class_prior = [1.0/class_num for _ in range(class_num)] 
-                # print("self.class_prior = ", self.class_prior)
             else:
                 self.class_prior = []
-                sample_num = float(len(y))
-                # print("sample_num = ",sample_num)     #len(y) == 15
+                sample_num = float(len(y))     #len(y) == 15
                 for c in self.classes:
                     c_num = np.sum(np.equal(y,c))
                     self.class_prior.append((c_num+self.alpha)/(sample_num+class_num*self.alpha))   #pro of classes:P(yk)
-        # print("self.class_prior = ", self.class_prior)
+        
         # calculate the conditinonal prob example: P(xj|yk) 
         self.conditional_prob = {}  # like { c0:{ x0:{ value0:0.2, value1:0.8 }, x1:{} }, c1:{...} }
         for c in self.classes:
             self.conditional_prob[c] = {}
             for i in range(len(X[0])):  #for each feature
-                # print("X[0] = ",X[1])
-                feature = X[np.equal(y,c)][:,i]  # feature is x's match -1 and 1 numbers 
-                # print('feature = ',feature)   
+                feature = X[np.equal(y,c)][:,i]  # feature is x's match -1 and 1 numbers    
                 self.conditional_prob[c][i] = self.cal_feature_prob(feature)
-        # print("self.conditional_prob = ", self.conditional_prob)
         return self
     #given values_prob {value0:0.2,value1:0.1,value3:0.3,.. } and target_value
     #return the probability of target_value
@@ -79,7 +72,6 @@ class MultinomialNB(object):
         #TODO1:check and raise NoFitError 
         #ToDO2:check X
         if X.ndim == 1:
-            # print("X.ndim =",X.ndim)
             return self._predict_single_sample(X)
         else:
                 #classify each sample   
@@ -88,6 +80,19 @@ class MultinomialNB(object):
                         label = self._predict_single_sample(X[i])
                         labels.append(label)
                 return labels
+
+class GaussianNB(MultinomialNB):
+
+    def cal_feature_prob(self,feature):
+        nu = np.mean(feature)
+        sigma = np.std(feature)
+        return (nu,sigma)
+
+    def prob_guassian(self,nu,sigma):
+        return (1.0/(sigma*np.sqrt(2*np.pi))*np.exp(-(X - nu)**2 / (2*sigma**2)))
+
+    def _get_xj_prob(self,nu_sigma,target_value):
+        return prob_gaussian(nu_sigma[0],nu_sigma[1],target_value)
 
 if __name__ == "__main__" :
     X = np.array([
